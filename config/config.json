@@ -1,0 +1,9 @@
+{
+  "region": "us-east-2",
+  "domain": {
+    "baseDomain": "luis-isasi.com"
+  },
+  "development": {},
+  "testing": {},
+  "production": {}
+}
