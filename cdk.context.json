@@ -1,0 +1,10 @@
+{
+  "hosted-zone:account=192474940472:domainName=luis-isasi.com:region=us-east-1": {
+    "Id": "/hostedzone/Z0105354P7N7MLNUEMSD",
+    "Name": "luis-isasi.com."
+  },
+  "hosted-zone:account=192474940472:domainName=luis-isasi.com:region=us-east-2": {
+    "Id": "/hostedzone/Z0105354P7N7MLNUEMSD",
+    "Name": "luis-isasi.com."
+  }
+}

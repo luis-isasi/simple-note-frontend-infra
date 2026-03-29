@@ -1,24 +1,26 @@
 {
   "region": "us-east-2",
+  "account": "192474940472",
   "domain": {
     "baseDomain": "luis-isasi.com"
   },
-  "amplify": {
-    "appName": "simple-note-app",
-    "repository": "https://github.com/tu-usuario/tu-repositorio",
-    "branch": "main",
-    "githubTokenSecretName": "github-token"
-  },
-  "development": {
-    "subdomain": "dev-notes",
-    "enableAutoBuilds": true
-  },
-  "testing": {
-    "subdomain": "test-notes",
-    "enableAutoBuilds": true
-  },
-  "production": {
-    "subdomain": "notes",
-    "enableAutoBuilds": true
+  "component": {
+    "core": {
+      "repository": {
+        "owner": "luis-isasi",
+        "repository": "simple-note-clone-frontend",
+        "connectionArn": "arn:aws:codeconnections:us-east-2:192474940472:connection/f2e2863a-6462-4d84-a881-2360e3e66bef"
+      }
+    },
+    "development": {
+      "certificateRegion": "us-east-1",
+      "subDomain": "notes.dev",
+      "domain": "luis-isasi.com"
+    },
+    "production": {
+      "certificateRegion": "us-east-1",
+      "subDomain": "notes",
+      "domain": "luis-isasi.com"
+    }
   }
 }
