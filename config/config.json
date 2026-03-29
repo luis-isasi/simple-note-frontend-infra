@@ -3,7 +3,22 @@
   "domain": {
     "baseDomain": "luis-isasi.com"
   },
-  "development": {},
-  "testing": {},
-  "production": {}
+  "amplify": {
+    "appName": "simple-note-app",
+    "repository": "https://github.com/tu-usuario/tu-repositorio",
+    "branch": "main",
+    "githubTokenSecretName": "github-token"
+  },
+  "development": {
+    "subdomain": "dev-notes",
+    "enableAutoBuilds": true
+  },
+  "testing": {
+    "subdomain": "test-notes",
+    "enableAutoBuilds": true
+  },
+  "production": {
+    "subdomain": "notes",
+    "enableAutoBuilds": true
+  }
 }
