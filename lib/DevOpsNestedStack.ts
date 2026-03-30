@@ -1,12 +1,12 @@
-import { NestedStack, NestedStackProps, RemovalPolicy, Duration } from 'aws-cdk-lib';
+import { NestedStack, NestedStackProps, RemovalPolicy } from "aws-cdk-lib";
 import {
   aws_codepipeline as codePipeline,
   aws_codepipeline_actions as codePipelineActions,
   aws_codebuild as codeBuild,
   aws_s3 as s3,
-} from 'aws-cdk-lib';
-import { Construct } from 'constructs';
-import { EnvironmentNestedStack } from './EnvironmentNestedStack';
+  aws_iam as iam,
+} from "aws-cdk-lib";
+import { Construct } from "constructs";
 
 interface CoreConfig {
   repository: {
@@ -14,39 +14,44 @@ interface CoreConfig {
     repository: string;
     connectionArn: string;
   };
+  branches: {
+    development: string;
+    production: string;
+  };
 }
 
 interface DevOpsNestedStackProps extends NestedStackProps {
-  developmentStack: EnvironmentNestedStack;
-  productionStack: EnvironmentNestedStack;
+  amplifyAppId: string;
   config: CoreConfig;
+  devApiUrl: string;
+  prodApiUrl: string;
 }
 
 export class DevOpsNestedStack extends NestedStack {
   constructor(scope: Construct, props: DevOpsNestedStackProps) {
-    super(scope, 'DevOps', props);
+    super(scope, "DevOps", props);
 
-    const artifactBucket = new s3.Bucket(this, 'ArtifactBucket', {
+    const artifactBucket = new s3.Bucket(this, "ArtifactBucket", {
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
     });
 
-    const pipeline = new codePipeline.Pipeline(this, 'Pipeline', {
-      pipelineName: 'SimpleNoteFrontendPipeline',
+    const pipeline = new codePipeline.Pipeline(this, "Pipeline", {
+      pipelineName: "SimpleNoteFrontendPipeline",
       artifactBucket,
     });
 
     // Source artifact
-    const sourceCode = new codePipeline.Artifact('SourceCode');
+    const sourceCode = new codePipeline.Artifact("SourceCode");
 
     // Source Stage
     pipeline.addStage({
-      stageName: 'Source',
+      stageName: "Source",
       actions: [
         new codePipelineActions.CodeStarConnectionsSourceAction({
-          actionName: 'Checkout',
+          actionName: "Checkout",
           triggerOnPush: true,
-          branch: 'main',
+          branch: "main",
           output: sourceCode,
           owner: props.config.repository.owner,
           repo: props.config.repository.repository,
@@ -55,101 +60,108 @@ export class DevOpsNestedStack extends NestedStack {
       ],
     });
 
-    // Build Development
-    const devBuildOutput = new codePipeline.Artifact('DevBuildOutput');
+    // Build & Deploy Development
+    const devBuildProject = this.createBuildProject(
+      "Development",
+      props.amplifyAppId,
+      props.config.branches.development,
+      props.devApiUrl,
+    );
+
     pipeline.addStage({
-      stageName: 'BuildDevelopment',
+      stageName: "BuildDevelopment",
       actions: [
         new codePipelineActions.CodeBuildAction({
-          actionName: 'Build',
-          project: this.createBuildProject('Development'),
+          actionName: "Build",
+          project: devBuildProject,
           input: sourceCode,
-          outputs: [devBuildOutput],
-        }),
-      ],
-    });
-
-    // Deploy Development
-    pipeline.addStage({
-      stageName: 'DeployDevelopment',
-      actions: [
-        new codePipelineActions.S3DeployAction({
-          actionName: 'Deploy',
-          bucket: props.developmentStack.customBucket.bucket,
-          input: devBuildOutput,
-          cacheControl: [codePipelineActions.CacheControl.noCache()],
         }),
       ],
     });
 
     // Manual Approval before Production
     pipeline.addStage({
-      stageName: 'ApproveProduction',
+      stageName: "ApproveProduction",
       actions: [
         new codePipelineActions.ManualApprovalAction({
-          actionName: 'Approve',
+          actionName: "Approve",
         }),
       ],
     });
 
-    // Build Production
-    const prodBuildOutput = new codePipeline.Artifact('ProdBuildOutput');
+    // Build & Deploy Production
+    const prodBuildProject = this.createBuildProject(
+      "Production",
+      props.amplifyAppId,
+      props.config.branches.production,
+      props.prodApiUrl,
+    );
+
     pipeline.addStage({
-      stageName: 'BuildProduction',
+      stageName: "BuildProduction",
       actions: [
         new codePipelineActions.CodeBuildAction({
-          actionName: 'Build',
-          project: this.createBuildProject('Production'),
+          actionName: "Build",
+          project: prodBuildProject,
           input: sourceCode,
-          outputs: [prodBuildOutput],
-        }),
-      ],
-    });
-
-    // Deploy Production
-    pipeline.addStage({
-      stageName: 'DeployProduction',
-      actions: [
-        new codePipelineActions.S3DeployAction({
-          actionName: 'Deploy',
-          bucket: props.productionStack.customBucket.bucket,
-          input: prodBuildOutput,
-          cacheControl: [
-            codePipelineActions.CacheControl.setPublic(),
-            codePipelineActions.CacheControl.maxAge(Duration.days(1)),
-          ],
         }),
       ],
     });
   }
 
-  private createBuildProject(envName: string): codeBuild.PipelineProject {
-    return new codeBuild.PipelineProject(this, `Build${envName}`, {
+  private createBuildProject(
+    envName: string,
+    amplifyAppId: string,
+    branchName: string,
+    apiUrl: string,
+  ): codeBuild.PipelineProject {
+    const project = new codeBuild.PipelineProject(this, `Build${envName}`, {
       projectName: `SimpleNoteFrontend-${envName}`,
       environment: {
         buildImage: codeBuild.LinuxBuildImage.STANDARD_7_0,
       },
+      environmentVariables: {
+        AMPLIFY_APP_ID: { value: amplifyAppId },
+        AMPLIFY_BRANCH: { value: branchName },
+        VITE_API_URL: { value: apiUrl },
+      },
       buildSpec: codeBuild.BuildSpec.fromObject({
-        version: '0.2',
+        version: "0.2",
         phases: {
           install: {
-            'runtime-versions': { nodejs: '20' },
+            "runtime-versions": { nodejs: "20" },
           },
           pre_build: {
-            commands: ['npm install'],
+            commands: ["npm install"],
           },
           build: {
-            commands: ['npm run build'],
+            commands: [
+              "npm run build",
+              "cd dist && zip -r ../build.zip . && cd ..",
+              "RESULT=$(aws amplify create-deployment --app-id $AMPLIFY_APP_ID --branch-name $AMPLIFY_BRANCH)",
+              "JOB_ID=$(echo $RESULT | python3 -c \"import sys,json; print(json.load(sys.stdin)['jobId'])\")",
+              "ZIP_URL=$(echo $RESULT | python3 -c \"import sys,json; print(json.load(sys.stdin)['zipUploadUrl'])\")",
+              'curl -T build.zip "$ZIP_URL"',
+              "aws amplify start-deployment --app-id $AMPLIFY_APP_ID --branch-name $AMPLIFY_BRANCH --job-id $JOB_ID",
+            ],
           },
         },
-        artifacts: {
-          files: ['**/*'],
-          'base-directory': 'out',
-        },
         cache: {
-          paths: ['node_modules/**/*'],
+          paths: ["node_modules/**/*"],
         },
       }),
     });
+
+    project.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["amplify:CreateDeployment", "amplify:StartDeployment"],
+        resources: [
+          `arn:aws:amplify:*:*:apps/${amplifyAppId}/branches/${branchName}/deployments/*`,
+          `arn:aws:amplify:*:*:apps/${amplifyAppId}/branches/${branchName}`,
+        ],
+      }),
+    );
+
+    return project;
   }
 }
