@@ -17,10 +17,16 @@
       }
     },
     "development": {
-      "apiUrl": ""
+      "envs": {
+        "VITE_APP_ENV": "development",
+        "VITE_API_URL": ""
+      }
     },
     "production": {
-      "apiUrl": ""
+      "envs": {
+        "VITE_APP_ENV": "production",
+        "VITE_API_URL": ""
+      }
     }
   }
 }

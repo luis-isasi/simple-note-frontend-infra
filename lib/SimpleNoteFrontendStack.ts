@@ -73,8 +73,8 @@ customHeaders:
     new DevOpsNestedStack(this, {
       amplifyAppId: amplifyApp.attrAppId,
       config: configuration.component.core,
-      devApiUrl: configuration.component.development.apiUrl,
-      prodApiUrl: configuration.component.production.apiUrl,
+      devEnvs: configuration.component.development.envs,
+      prodEnvs: configuration.component.production.envs,
     });
   }
 }

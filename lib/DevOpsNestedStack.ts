@@ -23,8 +23,8 @@ interface CoreConfig {
 interface DevOpsNestedStackProps extends NestedStackProps {
   amplifyAppId: string;
   config: CoreConfig;
-  devApiUrl: string;
-  prodApiUrl: string;
+  devEnvs: Record<string, string>;
+  prodEnvs: Record<string, string>;
 }
 
 export class DevOpsNestedStack extends NestedStack {
@@ -65,7 +65,7 @@ export class DevOpsNestedStack extends NestedStack {
       "Development",
       props.amplifyAppId,
       props.config.branches.development,
-      props.devApiUrl,
+      props.devEnvs,
     );
 
     pipeline.addStage({
@@ -94,7 +94,7 @@ export class DevOpsNestedStack extends NestedStack {
       "Production",
       props.amplifyAppId,
       props.config.branches.production,
-      props.prodApiUrl,
+      props.prodEnvs,
     );
 
     pipeline.addStage({
@@ -113,8 +113,12 @@ export class DevOpsNestedStack extends NestedStack {
     envName: string,
     amplifyAppId: string,
     branchName: string,
-    apiUrl: string,
+    envs: Record<string, string>,
   ): codeBuild.PipelineProject {
+    const viteEnvVars = Object.fromEntries(
+      Object.entries(envs).map(([key, value]) => [key, { value }])
+    );
+
     const project = new codeBuild.PipelineProject(this, `Build${envName}`, {
       projectName: `SimpleNoteFrontend-${envName}`,
       environment: {
@@ -123,7 +127,7 @@ export class DevOpsNestedStack extends NestedStack {
       environmentVariables: {
         AMPLIFY_APP_ID: { value: amplifyAppId },
         AMPLIFY_BRANCH: { value: branchName },
-        VITE_API_URL: { value: apiUrl },
+        ...viteEnvVars,
       },
       buildSpec: codeBuild.BuildSpec.fromObject({
         version: "0.2",
