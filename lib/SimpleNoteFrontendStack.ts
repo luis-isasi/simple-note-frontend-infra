@@ -35,6 +35,8 @@ customHeaders:
         value: 1; mode=block
       - key: Referrer-Policy
         value: strict-origin-when-cross-origin
+      - key: Content-Security-Policy
+        value: "default-src 'self'; connect-src 'self' https://api.simplenote.dev.luis-isasi.com https://api.simplenote.luis-isasi.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;"
 `,
     });
 
