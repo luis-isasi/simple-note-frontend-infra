@@ -19,13 +19,21 @@
     "development": {
       "envs": {
         "VITE_APP_ENV": "development",
-        "VITE_API_URL": ""
+        "VITE_API_URL": "https://api.simplenote.dev.luis-isasi.com/v1",
+        "VITE_COGNITO_USER_POOL_ID": "us-east-2_CR0bnO1NX",
+        "VITE_COGNITO_CLIENT_ID": "ul72m9tlr1hoic1tmts1afvjp",
+        "VITE_COGNITO_REGION": "us-east-2",
+        "VITE_TURNSTILE_SITE_KEY": "0x4AAAAAAC-BwZ7jaIEp663X"
       }
     },
     "production": {
       "envs": {
         "VITE_APP_ENV": "production",
-        "VITE_API_URL": ""
+        "VITE_API_URL": "https://api.simplenote.luis-isasi.com/v1",
+        "VITE_COGNITO_USER_POOL_ID": "us-east-2_l4BUeRox5",
+        "VITE_COGNITO_CLIENT_ID": "7436014u493f7965stnm3ao3sp",
+        "VITE_COGNITO_REGION": "us-east-2",
+        "VITE_TURNSTILE_SITE_KEY": "0x4AAAAAAC-Bx_-uymRd0RIq"
       }
     }
   }
