@@ -36,7 +36,7 @@ customHeaders:
       - key: Referrer-Policy
         value: strict-origin-when-cross-origin
       - key: Content-Security-Policy
-        value: "default-src 'self'; connect-src 'self' https://api.simplenote.dev.luis-isasi.com https://api.simplenote.luis-isasi.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:;"
+        value: "default-src 'self'; connect-src 'self' https://api.simplenote.dev.luis-isasi.com https://api.simplenote.luis-isasi.com https://challenges.cloudflare.com https://cognito-idp.us-east-2.amazonaws.com; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; frame-src https://challenges.cloudflare.com;"
 `,
     });
 
