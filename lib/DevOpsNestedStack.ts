@@ -23,8 +23,8 @@ interface CoreConfig {
 interface DevOpsNestedStackProps extends NestedStackProps {
   amplifyAppId: string;
   config: CoreConfig;
-  devEnvs: Record<string, string>;
-  prodEnvs: Record<string, string>;
+  devEnvs: Record<string, string | boolean>;
+  prodEnvs: Record<string, string | boolean>;
 }
 
 export class DevOpsNestedStack extends NestedStack {
@@ -113,10 +113,10 @@ export class DevOpsNestedStack extends NestedStack {
     envName: string,
     amplifyAppId: string,
     branchName: string,
-    envs: Record<string, string>,
+    envs: Record<string, string | boolean>,
   ): codeBuild.PipelineProject {
     const viteEnvVars = Object.fromEntries(
-      Object.entries(envs).map(([key, value]) => [key, { value }])
+      Object.entries(envs).map(([key, value]) => [key, { value: String(value) }])
     );
 
     const project = new codeBuild.PipelineProject(this, `Build${envName}`, {
