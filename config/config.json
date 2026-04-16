@@ -24,7 +24,7 @@
         "VITE_COGNITO_CLIENT_ID": "ul72m9tlr1hoic1tmts1afvjp",
         "VITE_COGNITO_REGION": "us-east-2",
         "VITE_TURNSTILE_SITE_KEY": "0x4AAAAAAC-BwZ7jaIEp663X",
-        "VITE_IS_ACTIVE_CAPTCHA": false
+        "VITE_IS_ACTIVE_CAPTCHA": true
       }
     },
     "production": {
